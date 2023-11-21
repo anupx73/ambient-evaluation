@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: unknown-balance
+  namespace: boa-balance-ns
+spec:
+  hosts:
+    - balancereader.boa-balance-ns.svc.cluster.local
+  http:
+    - directResponse:
+        body:
+          string: unknown error
+        status: 503
