@@ -1,0 +1,26 @@
+\appendix
+
+\section{Git Repositories}
+\label{appendix:researchRepo}
+https://github.com/anupx73/ambient-evaluation
+
+
+%\clearpage
+\section{Grafana Cloud Integration}
+\label{appendix:grafana}
+Following steps were followed to install Prometheus server / agents on GKE cluster to fetch metrics and logs from application workloads and ingest those data to Grafana cloud for visual analysis. 
+
+\begin{itemize}
+\item Login to Grafana cloud and navigate to Stack page
+\item Generate an API key to connect from GKE cluster to send logs
+\item Create a new access policy with metrics:write, traces:write scopes and generate a token
+\item Install Promtail agent on GKE cluster with the generated API key to scrape logs
+\item Install Prometheus on GKE cluster using Prometheus community helm chart to scrape metrics
+\item Check whether the connection between GKE and Grafana cloud is established from kubectl log on prometheus-server pod. Used K9S here for quick log check.
+\end{itemize}
+
+https://github.com/anupx73/ambient-evaluation/blob/main/ops/grafanaCloud.zsh
+
+\section{Waypoint Proxy Policy}
+\label{appendix:waypoint}
+https://github.com/anupx73/ambient-evaluation/blob/main/misc/waypoint-policy.yml

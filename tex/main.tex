@@ -1,0 +1,112 @@
+\documentclass[12pt]{article}
+
+% Set up data, if you need to add a package, go here
+\input{packages.tex}
+
+\begin{document}
+
+
+\thispagestyle{empty}
+\setlength\headheight{0pt} 
+\begin{center}
+
+\begin{center}
+\includegraphics[width=0.65\linewidth]{resources/TUD_Logo.png}
+\end{center}	
+
+        \vspace{0.25cm}
+        {\scshape\LARGE TU Dublin, Tallaght Campus \par}
+        \vspace{0.25cm}
+        {\scshape\Large Research Project, M.Sc. in DevOps\par}
+        \vspace{0.5cm}
+
+        {\Large\bfseries Evaluating the Next Generation Sidecar-less Kubernetes Service Mesh: Ambient Mesh\par}
+        
+        \vspace{0.5cm}
+        {\Large\itshape Anupam Saha\par}
+        Department of Computing
+        \vspace{0.25cm}
+
+\vspace{1cm}
+Supervised by\par
+Dr. John Burns \\
+Department of Computing\par
+\vspace{1.5cm}
+\large
+\today
+
+\end{center}
+
+\clearpage
+\restoregeometry
+\justify
+
+\section*{Declaration}
+I hereby certify that the material, which I now submit for assessment on the programmes of study leading to the award of Master of Science, is entirely my own work and has not been taken from the work of others except to the extent that such work has been cited and acknowledged within the text of my own work. No portion of the work contained in this thesis has been submitted in support of an application for another degree or qualification to this or any other institution.
+
+\vspace{2cm}
+\begin{flushright}
+-----------------------------------\\
+Anupam Saha\\
+\today
+\end{flushright}
+\pagebreak
+
+\section*{Acknowledgements}
+First and foremost, I want to sincerely thank Technical University of Dublin and the ICT Skillnet teams for providing this amazing chance to be a part of the Master's program. I also like to express my gratitude to Dr. John Burns, my supervisor, for his insightful criticism and suggestions on this dissertation. In closing, I would like to express my gratitude to my family and friends for their unwavering support over this extremely demanding academic year.
+\pagebreak
+
+%List of figures and tables, automatic from thesis.
+\listoffigures
+\pagebreak
+
+
+\listoftables
+\pagebreak
+
+
+\include{glossary}
+\printglossary[type=\acronymtype]
+\pagebreak
+
+
+\tableofcontents
+\pagebreak
+
+
+\include{01-Abstract}
+\pagebreak
+
+
+\include{02-Introduction}
+\pagebreak
+
+
+\include{03-LiteratureReview}
+\pagebreak
+
+
+\include{04-Method}
+\pagebreak
+
+
+\include{05-Results}
+\pagebreak
+
+
+\include{06-Discussion}
+\pagebreak
+
+
+\include{07-Conclusion}
+\pagebreak
+
+
+\include{appendices}
+\pagebreak
+
+
+%prints bibliography from bibliography file.
+\printbibliography
+
+\end{document}
