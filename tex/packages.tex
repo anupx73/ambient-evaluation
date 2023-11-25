@@ -76,15 +76,18 @@
 \usepackage{enumitem}
 
 %working collaboratively
-\usepackage[backgroundcolor=yellow]{todonotes}
+% \usepackage[backgroundcolor=yellow]{todonotes}
 
 % bibliography file using harvard
 \usepackage[style=authoryear-ibid,backend=biber]{biblatex}
 \bibliography{bibliography.bib} % with extension
 
 %glossary for acronyms
-\usepackage[acronym,nonumberlist,toc,section=subsection,numberedsection=nolabel]{glossaries}
-\makeglossaries
+% \usepackage[acronym,nonumberlist,toc,section=subsection,numberedsection=nolabel]{glossaries}
+% \makeglossaries
+\usepackage[acronym,nomain,nonumberlist]{glossaries}
+\loadglsentries{glossary}
+\makenoidxglossaries
 
 %line spacing
 \linespread{1.25}
