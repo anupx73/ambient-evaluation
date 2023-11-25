@@ -14,7 +14,7 @@ A sample application called Bank of Anthos (BOA) is used in this research as a H
     ├── loadgenerator              # Forked from BOA; docker run from localhost to simulate traffic
     ├── misc                       # Grafana dashboard JSON; Waypoint proxy policy
     ├── ops                        # Operational scripts
-    ├── tex                        # LateX source of the thesis
+    ├── tex                        # LaTeX source of the thesis
     └── README.md
 
 Grafana dashboard credit goes to [solo-io](https://github.com/solo-io/ambient-performance/tree/fortio-ambient).

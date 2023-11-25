@@ -5,14 +5,14 @@ While the performance testing is focused on comparing the overall Istio system r
 \begin{figure}[ht!]
     \centering
     \caption{Pod memory use in Istio sidecar mode}
-    \includegraphics[width=0.95\linewidth]{resources/01-sidecar-pod-mem.png}
+    \includegraphics[width=0.95\linewidth]{resources/sidecar-pod-mem.png}
     \label{result:podMemUseSidecar}
 \end{figure}
 
 \begin{figure}[ht!]
     \centering
     \caption{Pod memory use in Istio ambient mode}
-    \includegraphics[width=0.95\linewidth]{resources/02-ambient-pod-mem.png}
+    \includegraphics[width=0.95\linewidth]{resources/ambient-pod-mem.png}
     \label{result:podMemUseAmbient}
 \end{figure}
 
@@ -28,14 +28,6 @@ In Istio standard mode, 14 pods were deployed  with:
     \item Pods were distributed among 3 nodes with e2-standard-2 machine type including 2 vCPUs and 8 GiB RAM each.
 \end{itemize}
 
-
-\begin{figure}[ht!]
-    \centering
-    \caption{Pods running with sidecar from same namespace and 3 nodes}
-    \includegraphics[width=0.9\linewidth]{resources/single-ns-deployed.png}
-    \label{result:singleNSDeployed}
-\end{figure}
-\pagebreak
 
 \begin{figure}[ht!]
     \centering
@@ -59,7 +51,7 @@ In Istio standard mode, 14 pods were deployed  with:
     \item 3 instance of Waypoint proxy when L7 proxy is engaged
 \end{itemize}
 
-
+As part of this test, observability stack is used to capture any microservice service downtime by tracking HTTP response code 200. 
 
 \subsubsection{Sample Table}
 \begin{table}[ht!]

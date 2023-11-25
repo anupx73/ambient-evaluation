@@ -1,42 +1,38 @@
 \section{Method}
 
-
 \subsection{Cloud Infrastructure}
-Public cloud being the most preferred choice for enterprise grade application deployments where the microservice communication and security 
-is handed over to Istio, this research is conducted on \acrlong{gcp}. \acrshort{gcp} remains the choice as public cloud provider for this 
-research project mainly because of the author's familiarity with the platform. As Istio works at Kubernetes environment level, all the 
-methods used in this research are conducted on \acrlong{gke} - the fully managed Kubernetes service offered by \acrshort{gcp}.
+Public cloud being the most preferred choice for enterprise grade application deployments where the microservice communication and security is handed over to Istio, this research is conducted on \acrlong{gcp}. \acrshort{gcp} remains the choice as public cloud provider for this research project mainly because of the author's familiarity with the platform. As Istio works at Kubernetes environment level, all the methods used in this research are conducted on \acrlong{gke} - the fully managed Kubernetes service offered by \acrshort{gcp}.
 
 \subsubsection{High Level Strategy}
 To maintain a consistent and steady approach for each deployment and testing stages, \acrfull{iac} is used with Terraform. A rapid cloud infrastructure provisioning and de-provisioning model is followed to keep the cloud cost minimal. All the Terraform IaC, Shell scripts and Kubernetes configurations files used in this research are available at \ref{appendix:researchRepo}. At a high level first the Kubernetes cluster is provisioned and verified by kubectl on local system. Next the observability stack is installed on the cluster followed by the service mesh itself is installed and verified. After all the platform level stuffs are installed, configured and verified, a demo web application \acrfull{boa} is deployed using Kubernetes manifest files including the front end microservice attachment to the Istio ingress controller. This enables the application to be accessed from outside of the cluster. At the end of each testing sessions, everything is teared down completely using \acrshort{iac} to save cloud cost.
 
 \subsubsection{Terraform Provisioning}
-\acrfull{iac} used in this research leverages several Terraform modules to provision the \acrshort{gke} cluster along with necessary cloud components like \acrshort{vpc} network, subnet and node pool. Google offers several Terraform APIs to customize the cluster resource provisioning which gives a greater control and easy management of \acrshort{gke} cluster. For an easy identification of cluster resources, custom IP ranges are defined in Terraform script for Kubernetes services and pods. As a prerequisite of this setup a GCP project and service account is created manually from \acrshort{gcp} console along with enabling all required APIs using gcloud command line tool on local system. Terraform script defines the following configurations for the cluster used in this research. 
+Google offers several Terraform APIs to customize the cluster resource provisioning which gives a greater control and flexible management of \acrshort{gke} cluster. As a prerequisite of Terraform provisioninig a GCP project and service account is created manually from \acrshort{gcp} console along with enabling all required APIs using gcloud command line tool on local system. \acrfull{iac} used in this research leverages several Terraform modules to provision the \acrshort{gke} cluster along with necessary cloud components like \acrshort{vpc} network, subnet and node pool. Terraform script defines the following configurations for the cluster creation.
 \begin{itemize}
-    \item europe-west1 region 
-    \item e2-standard-2 machine type
-    \item 1 minimum cluster node
-    \item 10 maximum cluster nodes
-    \item 2 initial nodes
+  \item GCP europe-west1-b zonal cluster
+  \item e2-standard-2 machine type with 2 vCPU and 8GiB RAM
+  \item Latest stable release of Kubernetes v1.27.3
+  \item Node scaling from 1 to 10 with an initial count of 2
 \end{itemize}
 
-Essentially, a zonal cluster is created in europe-west1 region located physically at Belgium (\cite{gcpDocRegion}). This features a custom node pool started with 2 nodes and scaled up to 10 nodes. The machine type for the nodes are e2-standard-2 offering 2 vCPU and 8GiB RAM. Kubernetes version is set to v1.27.3 which is one of the most recent and stable release of Kubernetes (\cite{kubeDocRelease}) at the time of writing this paper.
+Essentially, a zonal cluster is created in europe-west1 physically located at Belgium (\cite{gcpDocRegion}) to keep the cloud cost to minimal. The default node pool comes with a cluster is not used here to define some custom parameters like manual IP ranges for Kubernetes services and pods, lower disk size. Selecting the machine type as e2-standard-2 gives \acrshort{boa} an ample amount of resources along with Istio components. Kubernetes version is set to v1.27.3 which is one of the most recent and stable release of Kubernetes (\cite{kubeDocRelease}) at the time of writing this paper.
 
 
 \subsubsection{Demo Application}
 \acrshort{boa}, a microservice based demo application from \acrshort{gcp} open source repository \cite{githubBOA} is used for this research project. This application is developed by \acrshort{gcp} team to demonstrate their products and proven to be a perfect fit for evaluating Ambient mesh as it comes with predefined Kubernetes deployment manifest files. With minimal changes to these manifest files, microservice deployment remains fairly straight forward job for the research. This enables focusing more on the Istio rather investing more time on application source code build and deployment. \acrshort{boa} simulates a virtual online banking system with facilities of account opening, deposit, withdraw and balance enquiry. This application consists of a total nine microservices out of which, eight microservices are used without any modifications for this research. The application follows a typical microservice based architecture which is defined in Figure \ref{method:boaDesign}.
 
 \begin{figure}[ht!]
-    \centering
-    \includegraphics[width=1.0\linewidth]{resources/boa-architecture.png}
-    \caption{Bank of Anthos application architecture}
-    \label{method:boaDesign}
+  \centering
+  \includegraphics[width=1.0\linewidth]{resources/boa-architecture.png}
+  \caption{Bank of Anthos application architecture}
+  \label{method:boaDesign}
 \end{figure}
 
 The load generator script comes with the project is modified to suite the purpose of this research and run from local system to reduce the burden on the cluster.
 
 
-\subsection{Observability System}
+\subsection{Observability Mechanism}
+\label{observabilityStack}
 Monitoring in dynamic service-oriented architectures is a crucial point of success and observability takes it all to a complete new level by exploring the internal state of the microservices. This paper explores the resource utilization of ambient mesh in different conditions and compares them with Istio's sidecar models utilization. To perform this comparison, collecting time series data points, storing and visualizing them is very crucial, hence a rich observability stack named Prometheus and Grafana is used.
 
 \subsubsection{Prometheus as Datasource}
@@ -50,56 +46,72 @@ Prometheus community helm chart is used to install the observability stack which
 
 
 \subsection{Test Architecture}
-Ambient mesh does not rely on any additional containers in microservice pods, the memory and CPU footprints shall be lower on the overall system, including pod, node and cluster levels. In sidecar mode, Istio deploys a sidecar proxy per pod, and this sidecar increases proportionally with the pod replica counts. Ambient mode deploys Ztunnel proxy per node and Waypoint proxy per service account or namespace basis. Istio system load comparison across multiple microservice pods and cluster nodes shall account for these factors while testing. Istio shall be used with default mTLS inter-service communication and an L7 policy in ambient mode to engage the Waypoint proxy. Overall, the two deployment scenarios with the BOA application shall deliver a result on the performance factor of ambient mesh. Data collection shall be performed on the site data plane across the cluster using Prometheus and Grafana.
+As the open source edition of Ambient mesh is now a part of the Istio project (\cite{istioHoward2022}), this research is focused on two Istio modes - sidecar and ambient. In sidecar mode, Istio deploys the service mesh data plane as a sidecar proxy per pod, and this sidecar increases proportionally with the pod replica counts. Ambient mode on the other hand does not rely on any additional containers per pod to deploy the data plane. Hence without the extra container load on each and every pod on a Kubernetes cluster, the compute resource utilization shall be lower in ambient mode. However, ambient mode deploys Ztunnel proxies per node basis and Waypoint proxies per namespace basis which grows with the size of cluster and the number of nodes inside it. Waypoint proxy can also be deployed per Kubernetes service account basis but that remains beyond the test scope of this research at present. To compare the performance of ambient mesh over sidecar mode, a set of comparison tests are architecture in this chapter. A compute resource utilization measurement is designed to figure out if ambient mode is more efficient. A microservice latency measurement test design plan is done to check if adding a new layer of HTTP processing - the Waypoint  proxy, increases latency. And an operational complexity test to check if ambient mode of Istio provides any benefits to the Kubernetes admins. Istio system components are spread across multiple microservice pods and nodes hence while testing all the mentioned points, these factos are accounted. Istio comes default with mTLS inter-service communication which is used for all the test along with a layer 7 policy in ambient mode to engage the Waypoint proxy.
 
-\subsubsection{Compute Resource Utilization}
-First, a typical use case of small organization shall be followed where 8 microservices of the BOA application is deployed to a single Kubernetes namespace with two replica counts. Secondly, an enterprise grade deployment model shall be followed where microservices are typically deployed in different namespaces with team level access restriction applied by Kubernetes role based access control (RBAC) policies. The RBAC is not applicable here as that has no impact on service mesh performance but BOA microservices shall be deployed to 8 different namespaces with 6 replicas. This test will verify the Waypoint proxy performance impact in an enterprise grade environment as 8 Waypoint proxies will be in the cluster attached to each namespaces. In both cases, the count of Ztunnel proxies will vary based on the cluster node count. The exact test config data shall be captured in test result section including the test data comparison between the sidecar mode, ambient with L4 proxy only and ambient with L4 and L7 proxies. A load testing tool comes with BOA application shall be used to simulate traffic data to BOA for 10 minutes in each cases with 50 users at a rate of 1 per second to perform sign up, login, transaction and logout operations. Two architectures are depicted below about the test infrastructures.
+\subsubsection{Compute Resource Utilization Measurement}
+Two deployment scenarios with the \acrshort{boa} is used to perform the memory and CPU efficiency test of two Istio mdoes. First, a typical small organization use case is followed where 8 microservices of the \acrshort{boa} application is deployed to a single Kubernetes namespace with two replica counts. Secondly, an enterprise grade deployment model is followed where microservices are typically deployed in different namespaces with team level access restricted by Kubernetes \acrlong{rbac} policies. \acrshort{rbac} is not applicable here as that has no impact on service mesh performance but  \acrshort{boa} microservices are deployed to 8 different namespaces with 6 replicas. The target of this test is to verify both the Istio modes in a real life deployment environment. The Waypoint proxy performance impact in ambient mode is an interesting factor as 8 Waypoint proxies is deployed in the cluster attached to each namespaces. In both cases, the count of Ztunnel proxies can vary based on the cluster node counts. The exact number of node and pod counts are documented in \ref{testReadiness}. Figure \ref{method:singleNsInfraArch} shows a visualization of GCP infrastructure view where a single namespace 'boa' is used for both Istio mdoes. In both modes, the istio-system namespace hosts the istio control plane and ingress controller. Namespace monitoring is used for the observability stack described in \ref{observabilityStack}. In sidecar mode, each node is hosting multiple microservice pods with sidecar proxy injected whereas in ambient mode, there is no sidecar injection but there is a Ztunnel pod on each nodes. A single instance of Waypoint proxy pod is seen on the right hand portion of the figure \ref{method:singleNsInfraArch} as the deployment mode is about testing on single namespace environment.
 
 \begin{figure}[ht!]
     \centering
-    \includegraphics[width=0.7\linewidth]{resources/single-ns-test-infra.drawio.png}
-    \caption{GCP infrastructure architecture with single namespace for test}
+    \includegraphics[width=1.0\linewidth]{resources/single-ns-test-infra.drawio.png}
+    \caption{GCP Infrastructure Architecture with Single Namespace}
     \label{method:singleNsInfraArch}
 \end{figure}
 
+On the other hand, Figure \ref{method:multiNsInfraArch} shows the GCP infrastructure visualization of multiple namespace deployment of \acrshort{boa} application. The diagram shows upto 3 namespace deployment to keep the complexity of the figure lower however in the actual test 8 namespaces are used, each namespace representing a single microservice. In multiple namespace deployment environment, 'istio-system' and 'monitoring' namespaces remain unchanged but the data plane components of Istio are changed marginally. A Ztunnel is deployed per node wise whereas instance of Waypoint proxy is seen multiple times to cover multile namespaces.
 \begin{figure}[ht!]
     \centering
-    \includegraphics[width=0.7\linewidth]{resources/multi-ns-test-infra.drawio.png}
-    \caption{GCP infrastructure architecture with Multiple namespace (diagram shows only 3, actual test uses 8) for test}
+    \includegraphics[width=1.0\linewidth]{resources/multi-ns-test-infra.drawio.png}
+    \caption{GCP Infrastructure Architecture with Multiple Namespaces}
     \label{method:multiNsInfraArch}
 \end{figure}
 
-\subsubsection{Latency Impact Measurement}
-Grey literature mentions Istio’s network latency and identifies the source as intensive L7 processing (\cite{istioHoward2022}). In ambient mesh, the L7 or Waypoint proxies can be deployed to different nodes by the Istio system. This situation directs the Ztunnel to pass traffic through a Waypoint deployed on a separate node, adding some delay in microservice calls. Istio authors claim the latency is close to Istio sidecar implementation (\cite{istioHoward2022}). A test comparison between the sidecar and ambient mode of Istio shall reveal the result of this claim by measuring latency between two microservices from the BOA application. This latency test will also decide whether separating proxy layers among L4 and L7 in ambient mode results in some practical benefits.
 
-\subsubsection{Operational Complexity Measurement}
-On a live Kubernetes cluster with hundreds or thousands of microservices, upgrading Istio is always a challenge for Kubernetes admins. To minimize the impact, Istio documentation (\cite{istioDocCanaryUpgrade}) recommends to use blue-green deployment and canary deployment strategies to roll out new versions of Istiod control plane and ingress controller respectively. Upgrading Istio using these strategies are highly dependent on Istio Canary Deployment feature (\cite{istioDocHelm}) which is fortunately available in both the Istio versions used in the test. Aim for this test remains at comparing the sidecar and ambient mode from a service downtime and upgrade complexity perspectives. As recommended by Istio community, a blue-green deployment strategy is used to upgrade Istiod whereas canary deployment is used for ingress controller upgrade. Grafana is used to capture service downtime monitoring during Istio upgrade process by tracking HTTP response code 200. Istio version 1.20.0 being the latest release (\cite{istioNewsVersion}) of Istio as of writing this research paper this test will be a state-of-the-art comparison report on Istio version upgrade as well. The Istio upgrade process will follow the architecture shown in Figure \ref{method:istioUpgradeArch}.
+\subsubsection{Operational Friction Measurement}
+Istio sidecars break the declarative principle since the version of the injector used when the pod was built determines the version of Istio injected in the sidecar at runtime (\cite{gitMitch2023}). The sidecar does not upgrade when the injector is upgraded rather, all injected pods must be restarted for their sidecars to upgrade. This is an imperative action as opposed to a declarative one voilating the GitOps principles (\cite{gitopsBook}). On a live Kubernetes cluster with hundreds or thousands of microservices, upgrading Istio becomes a challenge for this imparative nature of current Istio implementation. To minimize the impact, Istio documentation (\cite{istioDocCanaryUpgrade}) recommends to use blue-green and canary deployment strategies to roll out new versions of Istiod control plane and ingress controller respectively, but still pod restart is inevitable. With ambient mode this restrction is expected to go away as it does not rely on sidecars. A test is peformed with a Kubernetes load balancer behind the Istio ingress gatways to apply the blue-green deployment model to upgrade the Istio version.
 
 \begin{figure}[ht!]
-    \centering
-    \includegraphics[width=0.7\linewidth]{resources/istio-upgrade-strategy.drawio.png}
-    \caption{GCP infrastructure architecture while upgrading Istio to avoid downtime}
-    \label{method:istioUpgradeArch}
+  \centering
+  \includegraphics[width=0.9\linewidth]{resources/istio-upgrade-strategy.drawio.png}
+  \caption{GCP Infrastructure Architecture of Istio Upgrade}
+  \label{method:istioUpgradeArch}
 \end{figure}
 
-As the sidecar mode of Istio needs proxy injection during pod initialization phase, installing Istio in Kubernetes cluster after an application deployment remains a challenge for the operators. Fortunately most of the times this is not a concern as in enterprise level organizations, applications are deployed only after Kubernetes cluster is configured and validated with required elements including Istio. For academic purposes, this research will verify whether the Istio ambient mode offers a smooth transition from no mesh to service mesh when Istio is installed post application deployment on a Kubernetes cluster.
+The upgrade architecture shown in Figure \ref{method:istioUpgradeArch} is heavily dependent on Istio Canary Deployment feature (\cite{istioDocHelm}) which is fortunately available in both the Istio versions used in this test. Istio version is updated to v1.20.0 from v1.19, the former being the latest release (\cite{istioNewsVersion}) as of writing this paper. In this context, this upgrade test will be one of the state-of-the-art comparison report for the recent Istio version as well.
 
+Another test is performed to check whether ambient mode offers a smooth transition from no mesh to service mesh when Istio is installed post application deployment on a Kubernetes cluster. In sidecar mode, a Kubernetes object MutatingWebHookConfig acting as a webhook (\cite{krochmalski2017docker}) is deployed during Istio installation to track application pod creation and then to enable Istiod to inject a sidecar. All these pod detection and sidecar injection happens during pod initialization phase, hence if the Istio is installed after an application deployment Kubernetes admins always struggles to add Istio in the existing services. Fortunately, most of the times this is not a concern as in enterprise level, applications are deployed only after Kubernetes cluster is configured and validated with required elements including Istio. For academic purposes, a test is made to compare this behavior from both Istiom modes.
+
+Both the mentioned tests in this section is aimed at comparing the sidecar and ambient mode from the perspectives of service downtime, upgrade complexity and quick adaption of a new change in Istio system.
 
 \subsection{Test Readiness}
-As the open source edition of ambient mesh is now a part of Istio project, this research is focused on two modes of Istio - sidecar and ambient. Istio remains the core part of this research and to produce the research report on ambient mesh this paper explores the performance and operational complexity of Istio ambient mode. A deep dive is made in this section on how Istio is installed, configured and verified in two different modes. Istio documentation (\cite{istioDocInstall}) refers Istioctl tool to be the preferred installation method for Istio being the most well managed and secured path. However for the Istio upgrade test the helm chart method is used in this research. Under the hood Istioctl method uses helm chart to install and configure Istio but using Istioctl tool comes with some additional benefits like quickly deploy an ingress gateway or monitoring tool instances for test purposes. Two most recent releases of Istio are used in this research - v1.19.3 and v1.20.0. To install Istio, Istioctl is downloaded to local system where the cluster communication is already established from previous steps. A clean installation of Istio with Istioctl brings up 2 core components of Istio, Istiod - the control plane and the ingress controller. These remains valid for both sidecar and ambient modes without any differences.
+\label{testReadiness}
+Istio remains the core part of this research and to produce the research report on ambient mesh this paper explores the performance and operational complexity of Istio ambient mode. However, to test Istio from a real life cloud deployment environment, a deep dive into demo application deployment, Istio configuration and verification is required for a successful research result. In this section how Istio is installed, configured and verified is discussed along with \acrshort{boa} application set.
+
+Istio documentation (\cite{istioDocInstall}) refers different methods for installing Istio system on a Kubernetes cluster however the preferred way is to use Istioctl - a tool which is installed on local system and uses Helm charts internally to install Istio on remote Kubernetes cluster. However for the Istio upgrade test the direct helm chart method is used in this research to use blue-green deployment. Istioctl comes with a lot of additional benefits like quick deployment of an ingress gateway or monitoring tool installation for testing purposes. In this research, Istio is installed and uninstalled several times using Istioctl and Helm Charts to capture test results. While using Istioctl, mainly two predefined profiles 'default' and 'ambient' is passed as command line argument to install Istio on remote cluster. A clean installation of Istio brings up two core components of Istio, Istiod - the control plane and the ingress controller in 'istio-system' namespace. These remains valid for both sidecar and ambient modes without any differences. Figure \ref{method:istioStdInstalledView} shows the cluster pod view from K9S - a tool used in all the tests to verify and query Kubernetes cluster components.
 
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=1.0\linewidth]{resources/istio-std-installed.png}
-    \caption{Istio sidecar deployment}
+    \caption{K9S View of Istio Control Plane}
     \label{method:istioStdInstalledView}
 \end{figure}
 
-As part of the installation, a namespace istio-system is created where both the components are placed. The ingress gateway will serve the frontend microservice over public IP address whereas the Istiod will configure all the sidecar proxies in application namespaces. Istioctl creates a istio-system namespace by default for all the Istio system services and pods.
+The ingress gateway is used to serve the frontend microservice over public IP address whereas the Istiod configures all the sidecar proxies, Ztunnels and Waypoint proxies wherever these are application. 
+
+A load testing script written in Python with Locust framework (\cite{locustDoc}) is used which comes by default as a microservice with \acrshort{boa} project. However, for this research project, some parameters of the script is modified and used from local test machine to simulate the live traffic to \acrshort{boa} application. With each tests, 50 user traffic is simulated at a rate of 1 per second for 10 minutes to perform sign up, login, transaction and logout operations.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[width=1.0\linewidth]{resources/boa-view.png}
+  \caption{Bank-of-anthos is accessible over external load balancer}
+  \label{method:boaWebView}
+\end{figure}
+
+Figure \ref{method:boaWebView} shows the frontend view of the \acrshort{boa} application when it is accessed over public IP address. For some small test verifications a manual UI navigation method is also used by navigating to different pages of \acrshort{boa}.
 
 
-\subsubsection{Sidecar Mode}
-At this stage application namespace labelling is done with 'istio-injection=enabled' to configure Istio system for sidecar injection into application pods. On the application deployment side, first the JSON web token is deployed to 'boa' namespace as a Configmap. Next, all the microservice manifests are deployed to set up the application workload and services. Once all the deployments are successful, the k9s view shows all microservice pods with two replicas each. Only the accounts-db and ledger-db microservices are deployed as a single StatefulSet. On checking the pod description using k9s, 'istio-proxy' container is seen representing the Istio data plane.
+\subsubsection{Sidecar Mode Test Setup}
+With the \acrshort{gke} cluster in place and the Istio system installed with Istioctl 'default' profile, istiod - the control plane and an ingress gateway controller is deployed to the 'istio-system' namespace. An application namespace 'boa' is created for single namespace deployment test and 8 different namespaces are created by the microservice manifest files in case of multiple namespace deployment scenario. Namespace labelling is done with 'istio-injection=enabled' to configure the Istio control plane for injecting sidecars into microservice pods. For the \acrshort{boa} application deployment, first the JSON web token is deployed to 'boa' namespace as a Configmap followed by applying microservice manifests files. Accounts DB and Ledger DB microservices are deployed as StatefulSet whereas rest of the microservices are deployed as Kubernetes Deployment object. Once everything is successfully deployed, the K9s view shows all microservice pods with two replicas each in case of single namespace deployment and six replicas in case of multiple namespace deployment. As part of the verification process the pod descriptions are checked using K9s which revelas the sidecar container as 'istio-proxy' as shown in Figure \ref{method:istioSidecarInjectionView}.
 
 \begin{figure}[ht!]
     \centering
@@ -108,57 +120,77 @@ At this stage application namespace labelling is done with 'istio-injection=enab
     \label{method:istioSidecarInjectionView}
 \end{figure}
 
-After the above verification, the frontend gateway is deployed so that the application can be accessed from outside of the cluster and further tests can be performed. At this point, a verification is done whether Istio data plane is engaged to offer the basic service mesh features like mTLS communication between microservices. A sniffing plugin for kubectl is used on local system along with packet capturing tool Wireshark. First, the test is executed without Istio deployed to proof that HTTP communications between microservices happens over plain text followed by Istio's mTLS encryption. While comparing the packet sniffing results between frontend and balance reader microservice a balance value of 71580 is spotted in plain text as shown in \ref{method:plainTxtWiresharkView} when Istio is not deployed.
-
-\begin{figure}[ht!]
-    \centering
-    \includegraphics[width=1.0\linewidth]{resources/boa-view.png}
-    \caption{Bank-of-anthos is accessible over external load balancer}
-    \label{method:boaWebView}
-\end{figure}
+In order to access the frontend microservice over a public IP address, a frontend gateway is attached to the istio ingress controller. By browsing to external IP address of the istio ingress controller, the \acrshort{boa} application is accesible from local system which confirms the application deployment. At this point, a verification is done whether Istio data plane is engaged in offering the basic service mesh functionality like mTLS encryption. Wireshark is used as a sniffing tool on local system with kubectl plugin 'ksniff' to intercept network packets between 2 microservices, frontend and balance reader. This verification involves a two stage process where the microservices are deployed previously on the cluster without Istio and the current deployment with Istio sidecar mode. While comparing the Wireshark captures for both cases, a balance value of "71580" is shown in plain text in case of no mesh set up. The plain text value is shown in Figure \ref{method:plainTxtWiresharkView} when Istio is not deployed.
 
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=1.0\linewidth]{resources/raw-balance-value.png}
-    \caption{Plain text communication without Istio deployment captured in Wireshark}
+    \caption{Plain Text Inter-Service Communication in No-Mesh Mode}
     \label{method:plainTxtWiresharkView}
 \end{figure}
 
-\subsubsection{Ambient Mode}
-Executing Istioctl install with ambient profile is used to set up the istiod control plane, Kubernetes CNI plugin and the Ztunnel proxy at host level. To deploy an ingress gateway, either couple of parameters needs to be passed to Istioctl command line or a config YAML need to be applied manually. Microservice deployment steps shall remain same but the application namespace label shall be changed to "istio.io/dataplane-mode=ambient" to engage ambient mode data plane. At this point, only Ztunnel component of ambient mesh is set up which can be tested by sending some traffic to pods and sniffing both pod and Ztunnel network to learn that, external traffic is only coming to Ztunnel pod. The following two figures shows how the Ztunnel is intercepting traffic received from ingress gateway 10.20.0.22 and then passing it through service pods.
+In single namespace test environment, 16 pods are running where:
+\begin{itemize}
+  \item Two replicas of eight microservices running a total of 16 sidecars
+  \item Three cluster nodes are used to host 16 pods
+\end{itemize}
+
+In multiple namespace test environment the pod counts are 48 where:
+\begin{itemize}
+  \item Six replicas of eight microservices running 48 sidecars
+  \item Eight cluster nodes are used to host 48 pods
+\end{itemize}
+
+
+\subsubsection{Ambient Mode Test Setup}
+Ambient mode of Istio is installed using Istioctl, similar to sidecar mode but with a different profile named 'ambient'. This installation creates the istio-system namespace and deploys istiod control plane along with CNI plugin. Once the Istiod control plane is provisioned it spawns Ztunnel proxy pods on each running nodes. An Ingress controller is also used here and the frontend gateway is attached to it. The process of namespace labelling remains same but with a different key value pair of "istio.io/dataplane-mode=ambient". Though the majority of set up process ramains same like sidecar mode, the verification process is different. To check the Ztunnel engagement, a handful traffic is sent to \acrshort{boa} by using the load generator script and packet sniffing is done for one of the microservice pod and a Ztunnel pod. The following two figures shows how the traffic is first intercepted by Ztunnel and then passed to the microservice pod. A closer look to Figure \ref{method:ztunnelLogView} and \ref{method:ztunnelTraceView} shows that Ztunnel received the traiifc from ingress gateway 10.20.0.22 and then passing to the respectuve service pods.
 
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=1.0\linewidth]{resources/ztunnel-log.png}
-    \caption{kubectl log view from Ztunnel pod}
+    \caption{Ztunnel Pod Receiving Traffic}
     \label{method:ztunnelLogView}
 \end{figure}
 
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=1.0\linewidth]{resources/ztunnel-network-trace.png}
-    \caption{Ztunnel network traffic captured from TermShark}
+    \caption{Ztunnel Forwards Traffic to Microservice Pod}
     \label{method:ztunnelTraceView}
 \end{figure}
 
-The Waypoint proxy set up need Kubernetes gateway API CRDs as prerequisites. By default Waypoint proxy get installed per namespace wise. Hence this research will focus on couple of different configurations for Waypoint proxy - all microservices deployed in a single namespace mapped to a single Waypoint proxy and microservices deployed across multiple namespaces mapped to different Waypoint proxies. In grey literature, there is a few test results discussed among Istio's sidecar and ambient mode, but a comparison between Waypoint proxies deployed in single and multiple namespaces is not performed. Figure \ref{method:waypointAppliedView} shows how the Waypoint proxy is engaged in ambient mesh setup to the microservice pods.
+To install the layer 7 proxy Waypoint Kubernetes gateway API CRDs are required to be installed on cluster as by default CRDs are not available with Istio installation. After configuring the custom CRDs required for Waypoint, each namespace gets a Waypoint proxy pod. When all microservices are deployed in a single namespace mapped there get a single Waypoint proxy but when the microservices are deployed across multiple namespaces, Waypoint proxies are deployed to each one of them. A comparison between Waypoint proxies deployed in single and multiple namespaces remains a crucial part of this research as it illustrates some most common real life deployment scenario where microservices are deployed in different namespaces. Figure \ref{method:waypointAppliedView} shows how the Waypoint proxy is engaged in ambient mesh setup to the microservice pods.
 
 \begin{figure}[ht!]
     \centering
-    \includegraphics[width=1.0\linewidth]{resources/waypoint-applied.png}
-    \caption{Waypoint proxy applied in ambient mesh}
+    \includegraphics[width=1.0\linewidth]{resources/ambient-multi-ns-l4-l7-deployed.png}
+    \caption{Waypoint Proxy is Applied Per Namespace Wise}
     \label{method:waypointAppliedView}
 \end{figure}
 
-To see Waypoint proxy engagement, a L7 policy (Appendix \ref{appendix:waypoint}) is applied to return a direct response from the balance reader microservice. For the research purpose a simple HTTP filtering is done based on the host name where all the requests made to balance reader microservice will result in returning a HTTP 503 error. The L7 policy is applied via a Kubernetes manifest file and it is targeted to application namespace. In case of the multiple namespace Istio testing scenario, this is particularly applied to the balance reader microservice namespace. As the frontend is not able to get the balance data from balance reader microservice a '---' value is displayed as shown in Figure \ref{method:l7PolicyAppliedView}. This involves traffic flowing from istio ingress to host level Ztunnel proxy and to the Waypoint proxy to get processed before it reaches to the balance reader microservice. This also means that, there could be latency impacts when the incoming traffic is moving through multiple hops before it reaches to the destination microservice.
+To see Waypoint proxy engagement, a L7 policy (Appendix \ref{appendix:waypoint}) is applied to return a direct response from the balance reader microservice. For the research purpose a simple HTTP filtering is done based on the host name where all the requests made to balance reader microservice will result in a HTTP 503 error. The L7 policy is applied via a Kubernetes manifest file and it is targeted to application namespace. Multiple namespace test scenario applies this policy to the balance reader namespace only. As the frontend is not able to get the balance value from balance reader microservice a '---' is displayed as shown in Figure \ref{method:l7PolicyAppliedView} when accessing \acrshort{boa} from a browser. This implies the traffic flows from istio ingress to host level Ztunnel proxy and finally followed by the Waypoint proxy before reaching to balance reader microservice.
+To see Waypoint proxy engagement, a L7 policy (Appendix \ref{appendix:waypoint}) is applied to return a direct response from the balance reader microservice. For the research purpose a simple HTTP filtering is done based on the host name where all the requests made to balance reader microservice will result in a HTTP 503 error. The L7 policy is applied via a Kubernetes manifest file and it is targeted to application namespace. Multiple namespace test scenario applies this policy to the balance reader namespace only. As the frontend is not able to get the balance value from balance reader microservice a '---' is displayed as shown in Figure \ref{method:l7PolicyAppliedView} when accessing \acrshort{boa} from a browser. This implies the traffic flows from istio ingress to host level Ztunnel proxy and finally to Waypoint proxy before reaching to balance reader microservice.
 
 \begin{figure}[ht!]
-    \centering
-    \includegraphics[width=1.0\linewidth]{resources/l7-policy-applied.png}
-    \caption{Result of Waypoint L7 policy enforcement}
-    \label{method:l7PolicyAppliedView}
+  \centering
+  \includegraphics[width=0.7\linewidth]{resources/l7-policy-applied.png}
+  \caption{Result of Waypoint L7 policy enforcement}
+  \label{method:l7PolicyAppliedView}
 \end{figure}
 
+With ambient mode in single namespace test 16 pods are running with:
+\begin{itemize}
+  \item Two replicas of eight microservices running without any sidecars
+  \item Two Ztunnel proxy pods on 2 nodes
+  \item One Waypoint proxy pod in the single namespace
+\end{itemize}
+
+In multiple namespace test environment the pod counts are 48 where:
+\begin{itemize}
+  \item Six replicas of eight microservices without any sidecars
+  \item Nine cluster nodes are used to host 48 pods
+  \item Eight Waypoint proxy pods are deployed in 8 namespaces to support L7 processing
+\end{itemize}
 
 \subsection{Challenges Encountered}
 \subsubsection{Ztunnel Blocks Service Start}
