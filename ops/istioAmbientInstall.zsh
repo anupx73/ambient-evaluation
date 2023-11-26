@@ -4,10 +4,6 @@
 #
 
 ambientInstall () {
-  # "Connecting to Cluster.."
-  gcloud container clusters get-credentials tud-eu-west1-cluster --zone=europe-west1-b --project=tudublin
-
-  # Installing Istio in Ambient Mode
   istioctl install --set profile=ambient \
   --set "components.ingressGateways[0].enabled=true" \
   --set "components.ingressGateways[0].name=istio-ingressgateway" -y

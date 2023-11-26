@@ -9,10 +9,6 @@ grafanaInit () {
 }
 
 grafanaInstall () {
-  # Connect to Cluster
-  gcloud container clusters get-credentials tud-eu-west1-cluster --zone=europe-west1-b --project=tudublin
-
-  # Install Prom, Grafana
   helm install prom-stack prometheus-community/kube-prometheus-stack -n monitoring --create-namespace
 }
 

@@ -4,12 +4,7 @@
 #
 
 istioInstall() {
-  # "Connecting to Cluster.."
-  gcloud container clusters get-credentials tud-eu-west1-cluster --zone=europe-west1-b --project=tudublin
-
-  # "Installing Istio in Sidecar Mode"
   istioctl install --set profile=default -y
-
   kubectl -n istio-system get service istio-ingressgateway
 }
 

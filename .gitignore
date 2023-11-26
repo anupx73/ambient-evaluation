@@ -10,3 +10,7 @@ build/
 *.tfstate
 *.tfstate.backup
 
+# istio
+ops/upgrade/**/istio-**/
+ops/upgrade/**/operator.yaml
+ops/upgrade/**/istio-*.json
