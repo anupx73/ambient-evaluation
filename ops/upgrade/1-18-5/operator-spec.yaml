@@ -1,15 +1,15 @@
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
-  name: 1-19-3
+  name: 1-18-5
   namespace: istio-system
 spec:
   profile: minimal
   # This value is required for Gloo Mesh Istio
   # hub: gcr.io/istio-enterprise
   # This value can be any Gloo Mesh Istio tag
-  tag: 1.19.3
-  revision: 1-19-3
+  tag: 1.18.5
+  revision: 1-18-5
 
   # You may override parts of meshconfig by uncommenting the following lines.
   meshConfig:
@@ -25,7 +25,7 @@ spec:
       # enable GlooMesh metrics service
       # envoyMetricsService:
       #   address: enterprise-agent.gloo-mesh:9977
-      # enable GlooMesh accesslog service
+      #  # enable GlooMesh accesslog service
       # envoyAccessLogService:
       #   address: enterprise-agent.gloo-mesh:9977
       # tracing:
@@ -62,7 +62,7 @@ spec:
       k8s:
         # Recommended to be >1 in production
         replicaCount: 1
-        # The Istio load tests mesh consists of 1000 services and 2000 sidecars with 70,000 mesh-wide requests per second and Istiod used 1 vCPU and 1.5 GB of memory (1.10.3).
+        # The Istio load tests mesh consists of 1000 services and 2000 sidecars with 70,000 mesh-wide requests per second and Istiod used 1 vCPU and 1.5 GB of memory (1.18.5).
         resources:
           requests:
             cpu: 200m
@@ -79,7 +79,7 @@ spec:
             apiVersion: apps/v1
             kind: Deployment
             # matches the format istiod-<revision_label>
-            name: istiod-1-19-3
+            name: istiod-1-18-5
           metrics:
             - resource:
                 name: cpu
@@ -99,24 +99,3 @@ spec:
     egressGateways:
     - name: istio-egressgateway
       enabled: false
-
-    # Helm values overrides
-  # values:
-  #   # https://istio.io/v1.5/docs/reference/config/installation-options/#global-options
-  #   global:
-  #     # needed for connecting VirtualMachines to the mesh
-  #     network: production-cluster-network
-  #     # needed for annotating istio metrics with cluster
-  #     multiCluster:
-  #       clusterName: production-cluster
-    #   istioNamespace: istio-system
-      # proxy:
-      #   # The Istio load tests mesh consists of 1000 services and 2000 sidecars with 70,000 mesh-wide requests per second and istio-proxy used 0.35 vCPU and 40 MB memory per 1000 requests per second (1.10.3).
-      #   resources:
-      #     requests:
-      #       cpu: 100m
-      #       memory: 128Mi
-      #     limits: 
-      #       cpu: 2000m
-      #       memory: 1024Mi
-      #   logLevel: warning

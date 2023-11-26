@@ -1,47 +1,42 @@
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
-  name: ingress-gateway-1-20-0
+  name: ingress-gateway-1-18-5
   namespace: istio-gateways
 spec:
   profile: empty
-  # This value is required for Gloo Mesh Istio
-  # hub: gcr.io/istio-enterprise
-  # This value can be any Gloo Mesh Istio tag
-  tag: 1.20.0
-  revision: 1-20-0
+  tag: 1.18.5
+  revision: 1-18-5
   components:
     ingressGateways:
-      - name: istio-ingressgateway-1-20-0
+      - name: istio-ingressgateway-1-18-5
         namespace: istio-gateways
         enabled: true
         label:
           istio: ingressgateway
-          version: 1-20-0
+          version: 1-18-5
           app: istio-ingressgateway
-          # matches spec.values.global.network in istiod deployment
-          # topology.istio.io/network: production-cluster-network
         k8s:
           hpaSpec:
-            maxReplicas: 5
+            maxReplicas: 2
             metrics:
               - resource:
                   name: cpu
                   targetAverageUtilization: 60
                 type: Resource
-            minReplicas: 2
+            minReplicas: 1
             scaleTargetRef:
               apiVersion: apps/v1
               kind: Deployment
-              name: istio-ingressgateway-1-20-0
+              name: istio-ingressgateway-1-18-5
           strategy:
             rollingUpdate:
               maxSurge: 100%
               maxUnavailable: 25%
           resources:
             limits:
-              cpu: 2000m
-              memory: 1024Mi
+              cpu: 500m
+              memory: 256Mi
             requests:
               cpu: 100m
               memory: 40Mi
@@ -65,10 +60,3 @@ spec:
               - name: tls
                 port: 15443
                 targetPort: 15443
-  values:
-    global:
-      # needed for connecting VirtualMachines to the mesh
-      network: production-cluster-network
-      # needed for annotating istio metrics with cluster
-      multiCluster:
-        clusterName: production-cluster
