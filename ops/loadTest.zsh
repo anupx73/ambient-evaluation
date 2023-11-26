@@ -8,12 +8,17 @@ startDocker() {
   sleep 20
 }
 
-buildLoad() {
+buildLoadTestImg() {
   cd loadgenerator/
   docker build -t cd loadgen .
 }
 
-execLoad() {
+execLoadTest() {
   APP_ADDR=$(kubectl -n istio-system get service istio-ingressgateway --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  docker run -e FRONTEND_ADDR=$APP_ADDR -it loadgen
+}
+
+execUpgradeLoadTest() {
+  APP_ADDR=$(kubectl -n istio-gateways get service istio-ingressgateway --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
   docker run -e FRONTEND_ADDR=$APP_ADDR -it loadgen
 }

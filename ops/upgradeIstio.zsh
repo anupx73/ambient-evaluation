@@ -5,26 +5,25 @@
 
 initUpgrade() {
   # Set environment variables
-  if [[ $1 = "1.19.3" ]]
-  then
-    ISTIO_VERSION=1.19.3
-    ISTIO_REVISION=1-19-3
-  elif [[ $1 = "1.18.5" ]]
+  if [[ $1 = "1.18.5" ]]
   then
     ISTIO_VERSION=1.18.5
     ISTIO_REVISION=1-18-5
+  elif [[ $1 = "1.19.3" ]]
+  then
+    ISTIO_VERSION=1.19.3
+    ISTIO_REVISION=1-19-3
   elif [[ $1 = "1.20.0" ]]
   then
     ISTIO_VERSION=1.20.0
     ISTIO_REVISION=1-20-0
   else
     echo "No valid Istio versions provided! Aborting.."
-    echo "Make sure to run this fn from: \$GITDIR/ops/"
     return 0
   fi
 
   # Set up folders
-  WORK_DIR=$(pwd)
+  WORK_DIR=$HOME/anupx73/ambient-evaluation/ops/
   ISTIO_DIR=$WORK_DIR/upgrade/$ISTIO_REVISION
   INIT_COMPLETED=1
 
@@ -130,9 +129,17 @@ cleanup() {
   # external lb
   kubectl delete -f $WORK_DIR/upgrade/k8s-lb-service.yaml
 
+  if [ $? -ne 0 ]; then
+    return 0
+  fi
+
   # namespaces
-  kubectl delete namespace istio-operator
-  kubectl delete namespace istio-system
-  kubectl delete namespace istio-gateways
   kubectl delete namespace istio-config
+  kubectl delete namespace istio-gateways
+  kubectl delete namespace istio-system
+  kubectl delete namespace istio-operator
+}
+
+restartApps() {
+  kubectl rollout restart deployment -n boa
 }
