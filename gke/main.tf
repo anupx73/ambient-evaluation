@@ -47,7 +47,8 @@ module "gke" {
   monitoring_enabled_components        = ["SYSTEM_COMPONENTS", "APISERVER", "CONTROLLER_MANAGER", "SCHEDULER"]
   logging_enabled_components           = ["SYSTEM_COMPONENTS", "WORKLOADS"]
   gke_backup_agent_config              = true
-  # config_connector                     = true
+  gce_pd_csi_driver                    = false
+  deletion_protection                  = false
 
   node_pools = [
     {
