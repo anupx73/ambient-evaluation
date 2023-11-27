@@ -19,8 +19,23 @@ Following steps were followed to install Prometheus server / agents on GKE clust
 \item Check whether the connection between GKE and Grafana cloud is established from kubectl log on prometheus-server pod. Used K9S here for quick log check.
 \end{itemize}
 
-https://github.com/anupx73/ambient-evaluation/blob/main/ops/grafanaCloud.zsh
+Steps are executed and referenced in Github repository \ref{appendix:researchRepo}
 
 \section{Waypoint Proxy Policy}
 \label{appendix:waypoint}
-https://github.com/anupx73/ambient-evaluation/blob/main/misc/waypoint-policy.yml
+
+\begin{lstlisting}[language=yaml]
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: unknown-balance
+  namespace: boa-balance-ns
+spec:
+  hosts:
+    - balancereader.boa-balance-ns.svc.cluster.local
+  http:
+    - directResponse:
+        body:
+          string: unknown error
+        status: 503
+\end{lstlisting}

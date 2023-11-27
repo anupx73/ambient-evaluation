@@ -67,21 +67,19 @@ On the other hand, Figure \ref{method:multiNsInfraArch} shows the GCP infrastruc
 \end{figure}
 
 
-\subsubsection{Operational Friction Measurement}
-Istio sidecars break the declarative principle since the version of the injector used when the pod was built determines the version of Istio injected in the sidecar at runtime (\cite{gitMitch2023}). The sidecar does not upgrade when the injector is upgraded rather, all injected pods must be restarted for their sidecars to upgrade. This is an imperative action as opposed to a declarative one voilating the GitOps principles (\cite{gitopsBook}). On a live Kubernetes cluster with hundreds or thousands of microservices, upgrading Istio becomes a challenge for this imparative nature of current Istio implementation. To minimize the impact, Istio documentation (\cite{istioDocCanaryUpgrade}) recommends to use blue-green and canary deployment strategies to roll out new versions of Istiod control plane and ingress controller respectively, but still pod restart is inevitable. With ambient mode this restrction is expected to go away as it does not rely on sidecars. A test is peformed with a Kubernetes load balancer behind the Istio ingress gatways to apply the blue-green deployment model to upgrade the Istio version.
+\subsubsection{Operational Complexity Measurement}
+On a live Kubernetes cluster with hundreds or thousands of microservices, upgrading Istio becomes a challenge. Istio upgrades are important to avoid any vulnerabilities hence Istio documentation (\cite{istioDocCanaryUpgrade}) recommends a safe way of upgrading by using blue-green and canary deployment strategies to roll out new versions. Even though these methods are used pod restart is inevitable as the sidecar does not upgrade when the injector is upgraded rather, all injected pods must be restarted for their sidecars to upgrade. Hence a multiple Istio version deployment is made side by side by using Istio revision and tagging features (\cite{postaIstio2021}). By this not only the pods can switch to Istio versions dynamically with a restart, the ingress gateways can also be switched with zero downtime. To achieve the desired blue-green deployment a Kubernetes load balancer is used and Istio ingress gateway service types are set to ClusterIP to avoid creating further load balancer services.
 
 \begin{figure}[ht!]
   \centering
-  \includegraphics[width=0.9\linewidth]{resources/istio-upgrade-strategy.drawio.png}
+  \includegraphics[width=1.0\linewidth]{resources/istio-upgrade-strategy.drawio.png}
   \caption{GCP Infrastructure Architecture of Istio Upgrade}
   \label{method:istioUpgradeArch}
 \end{figure}
 
-The upgrade architecture shown in Figure \ref{method:istioUpgradeArch} is heavily dependent on Istio Canary Deployment feature (\cite{istioDocHelm}) which is fortunately available in both the Istio versions used in this test. Istio version is updated to v1.20.0 from v1.19, the former being the latest release (\cite{istioNewsVersion}) as of writing this paper. In this context, this upgrade test will be one of the state-of-the-art comparison report for the recent Istio version as well.
+The upgrade architecture shown in Figure \ref{method:istioUpgradeArch} is heavily dependent on Istio Canary Deployment feature (\cite{istioDocHelm}). Istio version 1.18.5 is used a stable or blue version whereas version 1.19.3 is used as green version. Istio operator installation method is chosen for this test as it provides a greater control over parallel deployment instances of Istio.
 
-Another test is performed to check whether ambient mode offers a smooth transition from no mesh to service mesh when Istio is installed post application deployment on a Kubernetes cluster. In sidecar mode, a Kubernetes object MutatingWebHookConfig acting as a webhook (\cite{krochmalski2017docker}) is deployed during Istio installation to track application pod creation and then to enable Istiod to inject a sidecar. All these pod detection and sidecar injection happens during pod initialization phase, hence if the Istio is installed after an application deployment Kubernetes admins always struggles to add Istio in the existing services. Fortunately, most of the times this is not a concern as in enterprise level, applications are deployed only after Kubernetes cluster is configured and validated with required elements including Istio. For academic purposes, a test is made to compare this behavior from both Istiom modes.
-
-Both the mentioned tests in this section is aimed at comparing the sidecar and ambient mode from the perspectives of service downtime, upgrade complexity and quick adaption of a new change in Istio system.
+Further to the Istio upgrade test, a no mesh to service mesh transition is also tested. When Istio is installed post application deployment on a Kubernetes cluster a restart of deployment is required for each namespaces. In sidecar mode, a Kubernetes object MutatingWebHookConfig acting as a webhook (\cite{krochmalski2017docker}) is deployed during Istio installation to track application pod creation and then to enable Istiod to inject a sidecar. All these pod detection and sidecar injection happens during pod initialization phase, hence if the Istio is installed after an application deployment Kubernetes admins always struggles to add Istio in the existing services. Fortunately, most of the times this is not a concern as in enterprise level, applications are deployed only after Kubernetes cluster is configured and validated with required elements including Istio. For academic purposes, this test checks whether ambient mode clears this blockers for cluster admins.
 
 \subsection{Test Readiness}
 \label{testReadiness}
@@ -111,22 +109,22 @@ Figure \ref{method:boaWebView} shows the frontend view of the \acrshort{boa} app
 
 
 \subsubsection{Sidecar Mode Test Setup}
-With the \acrshort{gke} cluster in place and the Istio system installed with Istioctl 'default' profile, istiod - the control plane and an ingress gateway controller is deployed to the 'istio-system' namespace. An application namespace 'boa' is created for single namespace deployment test and 8 different namespaces are created by the microservice manifest files in case of multiple namespace deployment scenario. Namespace labelling is done with 'istio-injection=enabled' to configure the Istio control plane for injecting sidecars into microservice pods. For the \acrshort{boa} application deployment, first the JSON web token is deployed to 'boa' namespace as a Configmap followed by applying microservice manifests files. Accounts DB and Ledger DB microservices are deployed as StatefulSet whereas rest of the microservices are deployed as Kubernetes Deployment object. Once everything is successfully deployed, the K9s view shows all microservice pods with two replicas each in case of single namespace deployment and six replicas in case of multiple namespace deployment. As part of the verification process the pod descriptions are checked using K9s which revelas the sidecar container as 'istio-proxy' as shown in Figure \ref{method:istioSidecarInjectionView}.
+With the \acrshort{gke} cluster in place and the Istio system installed with Istioctl 'default' profile, istiod - the control plane and an ingress gateway controller is deployed to the 'istio-system' namespace. An application namespace 'boa' is created for single namespace deployment test and 8 different namespaces are created by the microservice manifest files in case of multiple namespace deployment scenario. Namespace labelling is done with 'istio-injection=enabled' to configure the Istio control plane for injecting sidecars into microservice pods. For the \acrshort{boa} application deployment, first the JSON web token is deployed to 'boa' namespace as a ConfigMap followed by applying microservice manifests files. Accounts DB and Ledger DB microservices are deployed as StatefulSet whereas rest of the microservices are deployed as Kubernetes Deployment object. Once everything is successfully deployed, the K9s view shows all microservice pods with two replicas each in case of single namespace deployment and six replicas in case of multiple namespace deployment. As part of the verification process the pod descriptions are checked using K9s which reveals the sidecar container as 'istio-proxy' as shown in Figure \ref{method:istioSidecarInjectionView}.
 
 \begin{figure}[ht!]
-    \centering
-    \includegraphics[width=1.0\linewidth]{resources/istio-sidecar-injection.png}
-    \caption{Istio sidecar injection is in action}
-    \label{method:istioSidecarInjectionView}
+  \centering
+  \includegraphics[width=1.0\linewidth]{resources/istio-sidecar-injection.png}
+  \caption{Istio sidecar injection is in action}
+  \label{method:istioSidecarInjectionView}
 \end{figure}
 
-In order to access the frontend microservice over a public IP address, a frontend gateway is attached to the istio ingress controller. By browsing to external IP address of the istio ingress controller, the \acrshort{boa} application is accesible from local system which confirms the application deployment. At this point, a verification is done whether Istio data plane is engaged in offering the basic service mesh functionality like mTLS encryption. \gls{wireshark} is used as a sniffing tool on local system with kubectl plugin 'ksniff' to intercept network packets between 2 microservices, frontend and balance reader. This verification involves a two stage process where the microservices are deployed previously on the cluster without Istio and the current deployment with Istio sidecar mode. While comparing the Wireshark captures for both cases, a balance value of "71580" is shown in plain text in case of no mesh set up. The plain text value is shown in Figure \ref{method:plainTxtWiresharkView} when Istio is not deployed.
+In order to access the frontend microservice over a public IP address, a frontend gateway is attached to the istio ingress controller. By browsing to external IP address of the istio ingress controller, the \acrshort{boa} application is accessible from local system which confirms the application deployment. At this point, a verification is done whether Istio data plane is engaged in offering the basic service mesh functionality like mTLS encryption. \gls{wireshark} is used as a sniffing tool on local system with kubectl plugin 'ksniff' to intercept network packets between 2 microservices, frontend and balance reader. This verification involves a two stage process where the microservices are deployed previously on the cluster without Istio and the current deployment with Istio sidecar mode. While comparing the Wireshark captures for both cases, a balance value of "71580" is shown in plain text in case of no mesh set up. The plain text value is shown in Figure \ref{method:plainTxtWiresharkView} when Istio is not deployed.
 
 \begin{figure}[ht!]
-    \centering
-    \includegraphics[width=1.0\linewidth]{resources/raw-balance-value.png}
-    \caption{Plain Text Inter-Service Communication in No-Mesh Mode}
-    \label{method:plainTxtWiresharkView}
+  \centering
+  \includegraphics[width=1.0\linewidth]{resources/raw-balance-value.png}
+  \caption{Plain Text Inter-Service Communication in No-Mesh Mode}
+  \label{method:plainTxtWiresharkView}
 \end{figure}
 
 In single namespace test environment, 16 pods are running where:
@@ -143,54 +141,73 @@ In multiple namespace test environment the pod counts are 48 where:
 
 
 \subsubsection{Ambient Mode Test Setup}
-Ambient mode of Istio is installed using Istioctl, similar to sidecar mode but with a different profile named 'ambient'. This installation creates the istio-system namespace and deploys istiod control plane along with CNI plugin. Once the Istiod control plane is provisioned it spawns Ztunnel proxy pods on each running nodes. An Ingress controller is also used here and the frontend gateway is attached to it. The process of namespace labelling remains same but with a different key value pair of "istio.io/dataplane-mode=ambient". Though the majority of set up process ramains same like sidecar mode, the verification process is different. To check the Ztunnel engagement, a handful traffic is sent to \acrshort{boa} by using the load generator script and packet sniffing is done for one of the microservice pod and a Ztunnel pod. The following two figures shows how the traffic is first intercepted by Ztunnel and then passed to the microservice pod. A closer look to Figure \ref{method:ztunnelLogView} and \ref{method:ztunnelTraceView} shows that Ztunnel received the traiifc from ingress gateway 10.20.0.22 and then passing to the respectuve service pods.
+Ambient mode of Istio is installed using Istioctl, similar to sidecar mode but with a different profile named 'ambient'. This installation creates the istio-system namespace and deploys istiod control plane along with CNI plugin. Once the Istiod control plane is provisioned it spawns Ztunnel proxy pods on each running nodes. An Ingress controller is also used here and the frontend gateway is attached to it. The process of namespace labelling remains same but with a different key value pair of "istio.io/dataplane-mode=ambient". Though the majority of set up process remains same like sidecar mode, the verification process is different. To check the Ztunnel engagement, a handful traffic is sent to \acrshort{boa} by using the load generator script and packet sniffing is done for one of the microservice pod and a Ztunnel pod. The following two figures shows how the traffic is first intercepted by Ztunnel and then passed to the microservice pod. A closer look to Figure \ref{method:ztunnelLogView} and \ref{method:ztunnelTraceView} shows that Ztunnel received the traffic from ingress gateway 10.20.0.22 and then passing to the respective service pods.
 
 \begin{figure}[ht!]
-    \centering
-    \includegraphics[width=1.0\linewidth]{resources/ztunnel-log.png}
-    \caption{Ztunnel Pod Receiving Traffic}
-    \label{method:ztunnelLogView}
+  \centering
+  \includegraphics[width=1.0\linewidth]{resources/ztunnel-log.png}
+  \caption{Ztunnel Pod Receiving Traffic}
+  \label{method:ztunnelLogView}
 \end{figure}
 
 \begin{figure}[ht!]
-    \centering
-    \includegraphics[width=1.0\linewidth]{resources/ztunnel-network-trace.png}
-    \caption{Ztunnel Forwards Traffic to Microservice Pod}
-    \label{method:ztunnelTraceView}
+  \centering
+  \includegraphics[width=1.0\linewidth]{resources/ztunnel-network-trace.png}
+  \caption{Ztunnel Forwards Traffic to Microservice Pod}
+  \label{method:ztunnelTraceView}
 \end{figure}
 
 To install the layer 7 proxy Waypoint Kubernetes gateway API CRDs are required to be installed on cluster as by default CRDs are not available with Istio installation. After configuring the custom CRDs required for Waypoint, each namespace gets a Waypoint proxy pod. When all microservices are deployed in a single namespace mapped there get a single Waypoint proxy but when the microservices are deployed across multiple namespaces, Waypoint proxies are deployed to each one of them. A comparison between Waypoint proxies deployed in single and multiple namespaces remains a crucial part of this research as it illustrates some most common real life deployment scenario where microservices are deployed in different namespaces. Figure \ref{method:waypointAppliedView} shows how the Waypoint proxy is engaged in ambient mesh setup to the microservice pods.
 
 \begin{figure}[ht!]
-    \centering
-    \includegraphics[width=1.0\linewidth]{resources/ambient-multi-ns-l4-l7-deployed.png}
-    \caption{Waypoint Proxy is Applied Per Namespace Wise}
-    \label{method:waypointAppliedView}
+  \centering
+  \includegraphics[width=1.0\linewidth]{resources/ambient-multi-ns-l4-l7-deployed.png}
+  \caption{Waypoint Proxy is Applied Per Namespace Wise}
+  \label{method:waypointAppliedView}
 \end{figure}
 
-To see Waypoint proxy engagement, a L7 policy (Appendix \ref{appendix:waypoint}) is applied to return a direct response from the balance reader microservice. For the research purpose a simple HTTP filtering is done based on the host name where all the requests made to balance reader microservice will result in a HTTP 503 error. The L7 policy is applied via a Kubernetes manifest file and it is targeted to application namespace. Multiple namespace test scenario applies this policy to the balance reader namespace only. As the frontend is not able to get the balance value from balance reader microservice a '---' is displayed as shown in Figure \ref{method:l7PolicyAppliedView} when accessing \acrshort{boa} from a browser. This implies the traffic flows from istio ingress to host level Ztunnel proxy and finally followed by the Waypoint proxy before reaching to balance reader microservice.
+To engagement Waypoint proxy, a L7 policy (Appendix \ref{appendix:waypoint}) is applied to return a direct response from the balance reader microservice. For the research purpose a simple HTTP filtering is done based on the host name where all the requests made to balance reader microservice will result in a HTTP 503 error. The L7 policy is applied via a Kubernetes manifest file and it is targeted to application namespace. Multiple namespace test scenario applies this policy to the balance reader namespace only. As the frontend is not able to get the balance value from balance reader microservice a '---' is displayed as shown in Figure \ref{method:l7PolicyAppliedView} when accessing \acrshort{boa} from a browser. This implies the traffic flows from istio ingress to host level Ztunnel proxy and finally followed by the Waypoint proxy before reaching to balance reader microservice.
 To see Waypoint proxy engagement, a L7 policy (Appendix \ref{appendix:waypoint}) is applied to return a direct response from the balance reader microservice. For the research purpose a simple HTTP filtering is done based on the host name where all the requests made to balance reader microservice will result in a HTTP 503 error. The L7 policy is applied via a Kubernetes manifest file and it is targeted to application namespace. Multiple namespace test scenario applies this policy to the balance reader namespace only. As the frontend is not able to get the balance value from balance reader microservice a '---' is displayed as shown in Figure \ref{method:l7PolicyAppliedView} when accessing \acrshort{boa} from a browser. This implies the traffic flows from istio ingress to host level Ztunnel proxy and finally to Waypoint proxy before reaching to balance reader microservice.
 
 \begin{figure}[ht!]
   \centering
   \includegraphics[width=0.7\linewidth]{resources/l7-policy-applied.png}
-  \caption{Result of Waypoint L7 policy enforcement}
+  \caption{Waypoint L7 Policy Reflecting on Frontend}
   \label{method:l7PolicyAppliedView}
 \end{figure}
 
-With ambient mode in single namespace test 16 pods are running with:
+In single namespace test environment the pod count is 16 where:
 \begin{itemize}
   \item Two replicas of eight microservices running without any sidecars
   \item Two Ztunnel proxy pods on 2 nodes
   \item One Waypoint proxy pod in the single namespace
 \end{itemize}
 
-In multiple namespace test environment the pod counts are 48 where:
+In multiple namespace test environment the pod count is 48 where:
 \begin{itemize}
   \item Six replicas of eight microservices without any sidecars
   \item Nine cluster nodes are used to host 48 pods
   \item Eight Waypoint proxy pods are deployed in 8 namespaces to support L7 processing
 \end{itemize}
+
+\subsubsection{Istio Upgrade Test Setup}
+For Istio upgrade a different strategy is applied than testing Istio for performance benchmarking. The process involves deploying Istio operator - a program in the cluster to manage the state of Istio deployments. Istio operator manifest files come by default with Istioctl package but a custom resource definition or operator specification is made to configure the Istio control plane deployment. To deploy multiple versions of Istio on the same cluster, each version of Istioctl needs to be downloaded on the local system. The helm chart manifest files are applied to the cluster using 'kubectl' to deploy the operator. Once the operator is live on the cluster, the operator specification is applied to setup the Istiod control plane. This specification defines the Istio profiles to be installed on the cluster, which is 'minimal' and 'ambient' for sidecar and ambient mode respectively. By default the operator specification deploys an ingress gateway as well but that is restricted in the configuration to create manually in next stage. To verify the Istiod deployment state and whether multiple versions are running side by side on the cluster a kubectl describe pod command is used as shown in Figure \ref{method:multiIstiodVersions}.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[width=1.0\linewidth]{resources/multi-istiod.png}
+  \caption{Multiple Versions of Istiod is Live on Cluster}
+  \label{method:multiIstiodVersions}
+\end{figure}
+
+Similarly, the ingress gateways are also deployed to the cluster with a defined configuration (Appendix \ref{appendix:researchRepo}) where the service type is set to ClusterIP to enable the ingress gateway service to maintain a local cluster IP address. As shown in Figure \ref{method:multiGateways} two Istio gateways are operating with different revisions and one of them are selected by the external Kubernetes load balancer to route the traffic.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[width=1.0\linewidth]{resources/multi-gateways.png}
+  \caption{Multiple Versions of Ingress Gateways and Load Balancer}
+  \label{method:multiGateways}
+\end{figure}
 
 \subsection{Challenges Encountered}
 \subsubsection{Ztunnel Blocks Service Start}
@@ -202,7 +219,7 @@ While setting up Istio with ambient mode, couple of microservices pods were stuc
 \item Microservice deployment was done post Istio installation and namespace labelling
 \end{itemize}
 
-This scenario could not be reproducible all the time during the research, but this might be a point of interest for future investigations.
+This scenario was not reproducible quite often, but this may need a further investigations into application configuration before flagging as a ambient mesh.
 
 \subsubsection{Grafana Cloud Integration}
 Grafana Cloud was chosen at first as a monitoring platform to retain research test data for a long period of time. After the Grafana cloud integration with the GKE instance was made, a few tests were done with Istio system data capture. This resulted in exceeding the free-tier metric limit of 10000 per month by 400\%. Later, the metric ingestion limit was controlled up to a certain limit by adding a filter in the Prometheus remote data export configuration; however, to avoid any unforeseen issues, switching to a Grafana local instance was preferred. Appendix \ref{appendix:grafana} mentions the details about setting up Grafana cloud integration.

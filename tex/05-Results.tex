@@ -1,70 +1,136 @@
 \section{Results}
-\subsection{Comparison of Compute Resource Utilization}
+\label{resultSection}
+\subsection{Compute Resource Utilization}
 While the performance testing is focused on comparing the overall Istio system resource utilization of sidecar and ambient modes, a quick look at one of the microservice pod resource consumptions in both modes is a good starting point.
 
 \begin{figure}[ht!]
-    \centering
-    \caption{Pod memory use in Istio sidecar mode}
-    \includegraphics[width=0.95\linewidth]{resources/sidecar-pod-mem.png}
-    \label{result:podMemUseSidecar}
+  \centering
+  \includegraphics[width=0.85\linewidth]{resources/sidecar-pod-mem.png}
+  \caption{Pod Memory Use in Sidecar Mode}
+  \label{result:podMemUseSidecar}
 \end{figure}
 
 \begin{figure}[ht!]
-    \centering
-    \caption{Pod memory use in Istio ambient mode}
-    \includegraphics[width=0.95\linewidth]{resources/ambient-pod-mem.png}
-    \label{result:podMemUseAmbient}
+  \centering
+  \includegraphics[width=0.85\linewidth]{resources/ambient-pod-mem.png}
+  \caption{Pod Memory Use in Ambient Mode}
+  \label{result:podMemUseAmbient}
 \end{figure}
 
-Figure \ref{result:podMemUseSidecar} and \ref{result:podMemUseAmbient} shows a 10 minutes memory usage monitoring graph from Grafana for transaction history microservice pod. The result shows an improvement of 23.2\% in memory usage in Istio ambient mode with no difference in CPU usage.
+Figure \ref{result:podMemUseSidecar} and \ref{result:podMemUseAmbient} shows a ten minutes memory usage graph of transaction history microservice pod in sidecar and ambient mode. In sidecar mode the average memory usage reported is 308\gls{mib} whereas in ambient mode its only 250\gls{mib}. This result interprets an improvement of 23.2\% memory usage in ambient mode however there is no CPU resource utilization difference is noticed.
 
-\subsubsection{Istio System Resource Utilization with Single Namespace}
-Istio system performance is first tested with a typical small organization deployment model by deploying all microservices in a single Kubernetes namespace 'boa'. Lets look at some configurations before jumping into the results.
+% \subsubsection{Istio System Resource Utilization}
+Section \ref{testReadiness} describes how Istio system resource utilization comparison test is planned with two different environments. As part of the tests across single and multiple namespace deployment test data is captured from Grafana. In this section of the paper, test result graphs are shown with a minimum, average and maximum value for memory and CPU usage over a ten minutes time period. All the test result graphs can be intimidating hence before jumping into those, Table \ref{memoryUsageTable} and \ref{cpuUsageTable} briefs the results in a tabular form.
 
-In Istio standard mode, 14 pods were deployed  with:
-\begin{itemize}
-    \item 2 sidecars for two 2 microservices (accounts-db, ledger-db) deployed as StatefulSet x 1 replica
-    \item 12 sidecars for 6 other microservices deployed as Deployment x 2 replicas
-    \item Pods were distributed among 3 nodes with e2-standard-2 machine type including 2 vCPUs and 8 GiB RAM each.
-\end{itemize}
-
-
-\begin{figure}[ht!]
-    \centering
-    \caption{Istio system CPU consumption in sidecar mode}
-    \includegraphics[width=0.9\linewidth]{resources/max-sidecar-cpu.png}
-    \label{result:maxSidecarCpu}
-\end{figure}
-
-\begin{figure}[ht!]
-    \centering
-    \caption{Istio system Memory consumption in sidecar mode}
-    \includegraphics[width=0.9\linewidth]{resources/max-sidecar-ram.png}
-    \label{result:maxSidecarRam}
-\end{figure}
-
-
-
-\begin{itemize}
-    \item Pods distributed among 4 nodes with e2-standard-2 machine type including 2 vCPUs and 8 GiB RAM each.
-    \item 4 instance of Ztunnel on each nodes
-    \item 3 instance of Waypoint proxy when L7 proxy is engaged
-\end{itemize}
-
-As part of this test, observability stack is used to capture any microservice service downtime by tracking HTTP response code 200. 
-
-\subsubsection{Sample Table}
 \begin{table}[ht!]
-\centering
-    
-	\caption{Comparison \textit{p} values}
-	\begin{tabular}{ |l|c|c|}	
-		\hline		
-		\textbf{Attribute} & \textbf{\textit{p-value}} & \textbf{Significant} \\ \hline
-		Model A	 & 0.0521 & N \\ \hline
-		Model B  & 0.6171 & N \\ \hline 
-		Model C  & <0.00001 & Y \\ \hline 
-	\end{tabular}
-	\label{tab:pvalues}
-\end{table} 
+  \centering
+  \begin{tabular}{ |l|c|c|c|}
+    \hline
+    \textbf{Test Environment} & \textbf{\textit{Sidecar}} & \textbf{Ambient L4} & \textbf{Ambient L4 + L7} \\ \hline
+    Single Namespace & 584 & 67.3 & 120 \\ \hline
+    Multiple Namespaces & 1843.2 & 88.6 & 461 \\ \hline 
+  \end{tabular}
+  \caption{Comparison \textit{memory} values in MiB}
+  \label{memoryUsageTable}
+\end{table}
 
+Table \ref{memoryUsageTable} shows the memory utilization in single namespace environment as 584MiB in sidecar mode whereas in ambient mode with L4 processing 67.3MiB and with both L4, L7 processing it is 120MiB. In multiple namespace scenario, the figure changes to 1.80GiB in sidecar mode whereas only 88.6MiB in ambient L4 mode and 461MiB when both L4, L7 layers are engaged in ambient mode.
+
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{ |l|c|c|c|}
+    \hline
+    \textbf{Test Environment} & \textbf{\textit{Sidecar}} & \textbf{Ambient L4} & \textbf{Ambient L4 + L7} \\ \hline
+    Single Namespace & 0.107 & 0.052 & 0.099 \\ \hline
+    Multiple Namespaces & 0.403 & 0.208 & 0.245 \\ \hline
+  \end{tabular}
+  \caption{Comparison \textit{CPU} values in vCPU}
+  \label{cpuUsageTable}
+\end{table}
+
+Table \ref{cpuUsageTable} shows the CPU utilization of single namespace scenario as 0.1vCPU for sidecar mode and 0.05vCPU, 0.09vCPU in case of ambient L4 only and L4, L7 processing mode. In multiple namespaces test scenario the numbers changes to 0.40vCPU for sidecar and 0.20vCPU, 0.24vCPU for ambient L4 and L4, L7 mode. The remaining part of this section shows the test result graphs captured from Grafana.
+
+%%single ns
+%sidecar cpu, mem
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\linewidth]{resources/max-sidecar-cpu.png}
+  \caption{CPU Usage of Sidecar Mode in Single Namespace}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\linewidth]{resources/max-sidecar-mem.png}
+  \caption{Memory Usage of Sidecar Mode in Single Namespace}
+\end{figure}
+
+%ambient l4 cpu, mem
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\linewidth]{resources/max-ambient-l4-cpu.png}
+  \caption{CPU Usage of Ambient Mode(L4 Only) in Single Namespace}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\linewidth]{resources/max-ambient-l4-mem.png}
+  \caption{Memory Usage of Ambient Mode(L4 Only) in Single Namespace}
+\end{figure}
+
+%ambient l4+l7 cpu, mem
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\linewidth]{resources/max-ambient-l4-l7-cpu.png}
+  \caption{CPU Usage of Ambient Mode(L4 + L7) in Single Namespace}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\linewidth]{resources/max-ambient-l4-l7-mem.png}
+  \caption{Memory Usage of Ambient Mode(L4 + L7) in Single Namespace}
+\end{figure}
+
+
+%%multi ns
+%sidecar cpu, mem
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\linewidth]{resources/multi-ns-sidecar-cpu.png}
+  \caption{CPU Usage of Sidecar Mode in Multiple Namespace}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\linewidth]{resources/multi-ns-sidecar-mem.png}
+  \caption{Memory Usage of Sidecar Mode in Multiple Namespace}
+\end{figure}
+
+%ambient l4 cpu, mem
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\linewidth]{resources/ambient-multi-ns-l4-cpu.png}
+  \caption{CPU Usage of Ambient Mode(L4 Only) in Multiple Namespace}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\linewidth]{resources/ambient-multi-ns-l4-mem.png}
+  \caption{Memory Usage of Ambient Mode(L4 Only) in Multiple Namespace}
+\end{figure}
+
+%ambient l4+l7 cpu, mem
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\linewidth]{resources/ambient-multi-ns-l4-l7-cpu.png}
+  \caption{CPU Usage of Ambient Mode(L4 + L7) in Multiple Namespace}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\linewidth]{resources/ambient-multi-ns-l4-l7-mem.png}
+  \caption{Memory Usage of Ambient Mode(L4 + L7) in Multiple Namespace}
+\end{figure}
+
+
+\subsection{Operational Complexity}
+[TBD]
