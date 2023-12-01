@@ -1,7 +1,7 @@
 \section{Results}
 \label{resultSection}
 \subsection{Compute Resource Utilization}
-Section \ref{testReadiness} describes how Istio system resource utilization comparison test is designed with two different environments - single and multiple namespace deployment. In this section test result data and graphs are presented from Grafana with a minimum, maximum and a mean value of CPU and memory consumption over a ten minutes time period for each test. Though the test target is to compare Istio system resource utilization between sidecar and ambient modes, looking at a microservice pod resource utilization in first place gives some intial impression of ambient mode memory efficiency.
+Section \ref{testReadiness} describes how Istio system resource utilization comparison test is designed with two different environments - single and multiple namespace deployment. In this section test result data and graphs are presented from Grafana with a minimum, maximum and a mean value of CPU and memory consumption over a ten minutes time period for each test. Though the test target is to compare Istio system resource utilization between sidecar and ambient modes, looking at a microservice pod resource utilization in first place gives some initial impression of ambient mode memory efficiency.
 
 \begin{figure}[ht!]
   \centering
@@ -17,7 +17,7 @@ Section \ref{testReadiness} describes how Istio system resource utilization comp
   \label{result:podMemUseAmbient}
 \end{figure}
 
-Figure \ref{result:podMemUseSidecar} and \ref{result:podMemUseAmbient} shows two ten minutes memory usage graph of transaction history microservice pods captured from a single namespace test environment. Looking at the mean or average value of memory usage a significant difference is notice. In sidecar mode the average memory usage is 308 \gls{mib} whereas in ambient mode with L4 processing layer its only 250 \gls{mib}. This result interprets an improvement of 23.2\% memory usage in ambient mode however while comparing the CPU usage there is no noticable difference found hence the CPU usage details are not shown here. Rest of this section presents the test result graphs from twelve different test cases covering both single and multiple namespace environments. Looking at the graph and test values from bottom right side of the graphics can be intimidating hence before discussing further, Table \ref{allCpuResultsTable} and \ref{allMemResultsTable} summarizes the test results in tabular form. Both the table shows a raw data captured from Grafana with decimal point limited maximum to three places for both CPU and memory utilization.
+Figure \ref{result:podMemUseSidecar} and \ref{result:podMemUseAmbient} shows two ten minutes memory usage graph of transaction history microservice pods captured from a single namespace test environment. Looking at the mean or average value of memory usage a significant difference is notice. In sidecar mode the average memory usage is 308 \gls{mib} whereas in ambient mode with L4 processing layer its only 250 \gls{mib}. This result interprets an improvement of 23.2\% memory usage in ambient mode however while comparing the CPU usage there is no noticeable difference found hence the CPU usage details are not shown here. Rest of this section presents the test result graphs from twelve different test cases covering both single and multiple namespace environments. Looking at the graph and test values from bottom right side of the graphics can be intimidating hence before discussing further, Table \ref{allCpuResultsTable} and \ref{allMemResultsTable} summarizes the test results in tabular form. Both the table shows a raw data captured from Grafana with decimal point limited maximum to three places for both CPU and memory utilization.
 
 \begin{table}[ht!]
   \centering
@@ -164,7 +164,7 @@ With the above test results in place, lets find out the exact performance differ
   \label{sidecarCpuVsL4L7}
 \end{table}
 
-Table \ref{sidecarMemVsL4} shows a side by side comparison of memory utilization between Istio sidecar mode and ambient mode with L4 proxy only followed by an improvement percentage. In single namespace environment, sidecar mode uses 584 MiB memory whereas in ambient mode the memory footprint is only 67.3 MiB translating an improvement of 88.47\% in memory usage. Similarly while comparing the results from multiple namespace test environment, the memory utilization is improved in ambient mode by 95.13\% from 1.8 GiB to only 88 MiB. Table \ref{sidecarMemVsL4L7} reflects the test comparison result between sidecar mode and ambient mode with both L4 and L7 processing. In single namespace test environment, the improvement is 79.45\% whereas in multiple namespace scenario the efficiency rate is 74.98\%.
+Table \ref{res:sidecarMemVsL4} shows a side by side comparison of memory utilization between Istio sidecar mode and ambient mode with L4 proxy only followed by an improvement percentage. In single namespace environment, sidecar mode uses 584 MiB memory whereas in ambient mode the memory footprint is only 67.3 MiB translating an improvement of 88.47\% in memory usage. Similarly while comparing the results from multiple namespace test environment, the memory utilization is improved in ambient mode by 95.13\% from 1.8 GiB to only 88 MiB. Table \ref{res:sidecarMemVsL4L7} reflects the test comparison result between sidecar mode and ambient mode with both L4 and L7 processing. In single namespace test environment, the improvement is 79.45\% whereas in multiple namespace scenario the efficiency rate is 74.98\%.
 
 \begin{table}[ht!]
   \centering
@@ -175,7 +175,7 @@ Table \ref{sidecarMemVsL4} shows a side by side comparison of memory utilization
     Multiple Namespace & 1.8 GiB & 88.6 MiB & 95.13\% \\ \hline
   \end{tabular}
   \caption{\textit{Memory} Usage Comparison Between Sidecar and Ambient L4}
-  \label{sidecarMemVsL4}
+  \label{res:sidecarMemVsL4}
 \end{table}
 
 
@@ -188,7 +188,7 @@ Table \ref{sidecarMemVsL4} shows a side by side comparison of memory utilization
     Multiple Namespace & 1.8 GiB & 461 MiB & 74.98\% \\ \hline
   \end{tabular}
   \caption{\textit{Memory} Usage Comparison Between Sidecar and Ambient L4 + L7}
-  \label{sidecarMemVsL4L7}
+  \label{res:sidecarMemVsL4L7}
 \end{table}
 
 \subsection{Operational Complexity}
