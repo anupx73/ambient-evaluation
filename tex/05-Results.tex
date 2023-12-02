@@ -191,4 +191,41 @@ Table \ref{res:sidecarMemVsL4} shows a side by side comparison of memory utiliza
   \label{res:sidecarMemVsL4L7}
 \end{table}
 
+To summarize the results of CPU and memory utilization differences between sidecar and ambient mode Figure \ref{res:excelVisualCPU} - \ref{res:excelVisualMem} shows a visual comparison.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[width=0.62\linewidth]{resources/excelVisualCpu.png}
+  \caption{Sidecar vs Ambient CPU Usage in vCPU}
+  \label{res:excelVisualCPU}
+\end{figure}
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[width=0.62\linewidth]{resources/excelVisualMem.png}
+  \caption{Sidecar vs Ambient Memory Usage in MiB}
+  \label{res:excelVisualMem}
+\end{figure}
+
 \subsection{Operational Complexity}
+With \acrshort{boa} running on a freshly created cluster in standalone mode, ambient mode is installed and the namespace 'boa' is labelled to include the microservices into the mesh network. Wireshark packet capturing used once again to confirm that encrypted traffic is enabled in inter-service communication followed by a TCP handshake. This entitles that without a pod restart, ambient mode successfully brings the existing microservices under its hood. When testing the same sequence in sidecar mode, unless the pods are restarted the inter-service traffic data is not encrypted till the pods are restarted. In case of Istio upgrade the same pod restart mechanism is required for sidecar mode whereas the service downtime is handled well blue-green deployment in both sidecar and ambient mode. Pod restart is not trivial in most of the cases during an update however to understand the operational time complexities calculating the overall restart time for eight microservices used in this research could be useful up to certain level.
+
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{ |l|c|c| }
+    \hline
+    \textbf{Microservice} & \textbf{\textit{Restart Time}} \\ \hline
+    Accounts DB & 20s \\ \hline
+    Balance Reader & 1m 20s \\ \hline
+    Contacts & 30s \\ \hline
+    Frontend & 40s \\ \hline
+    Ledger DB & 20s \\ \hline
+    Ledger Writer & 1m 40s \\ \hline
+    Transaction History & 1m 30s \\ \hline
+    User Service & 30s \\ \hline
+  \end{tabular}
+  \caption{Pod Restart \textit{Time} in Sidecar Mode}
+  \label{res:podRestartTime}
+\end{table}
+
+Table \ref{res:podRestartTime} shows how much time each microservices take to restart its workload in the Istio sidecar mode. The time shown above is an illustration of operational time involved in Istio installation or upgrade which is not there in ambient mode.
