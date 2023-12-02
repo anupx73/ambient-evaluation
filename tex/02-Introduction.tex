@@ -1,22 +1,22 @@
 \section{Introduction}
 \subsection{Service Mesh and Istio}
-When the industry moved from monolith to microservice architecture a decade ago, additional challenges has been introduced. Some of the most prominent were service discovery, secure communication between microservices, policy enforcement and monitoring multi fold micro-services for a single application. All these non-functional requirements easily became the overhead for many development teams and service mesh concept was introduced as path to mitigation. Istio is one of the most popular implementation of such concept which is heavily used in current cloud enabled businesses.
+When the industry moved from monolith to microservice architecture a decade ago, additional challenges were introduced. Some of the most prominent are service discovery, secure communication between microservices, policy enforcement, and monitoring multi-fold microservices within a single application boundary. All these non-functional requirements easily became an overhead for many development teams, and the service mesh concept was introduced as mitigation path. Istio is one of the most popular implementation of such concept which is heavily used in current cloud enabled businesses.
 
-At the core of Istio, it uses sidecar proxies which encapsulates all the methods to implement the non-functional requirement without microservice code being impacted (\cite{techcrunch2022}). The sidecar sits as a separate container in microservice host or Kubernetes pods to intercept all the traffic requests and establish communication, network policy and security practices that the business expects from any service. In this architecture, additional containers are deployed alongside with service containers hence it increases the latency and resource utilization of the application. Despite of the minimal extra resource usage the functionality and reliability these containers provide are inevitable.
+At the core of Istio, it uses sidecar proxies, which encapsulate all the methods to implement the non-functional requirement without microservice code being impacted (\cite{techcrunch2022}). The sidecar sits as a separate container in a microservice host or Kubernetes pod to intercept all the traffic requests and establish communication, network policy, and security practices that the business expects from a service out of the box. In this architecture, additional containers are deployed alongside service containers; hence, it increases the resource utilization and operational complexity of the application. Despite these challenges, the functionality and reliability these sidecars provide are incredible.
 
 \subsection{Motivation}
-Performance optimization remains an engineering tasks for any software team and service mesh is no different. There has been several literature published on comparing Istio and other service meshes from performance and security perspective but there is no paper which describes a different architecture for service mesh altogether. Most of the service mesh available in the market either use Envoy or in-house developed sidecar proxies which incorporates the success factor for the product but a very few effort has been made to invent a solution from ground up. This paper explores one of such way to change the current service mesh is architect and configured to run on Kubernetes environment.
+Performance optimization remains an engineering task for any software team, and service mesh is no different. There are several pieces of literature published on comparing Istio and other service meshes from a performance and security perspective, but there is no paper that describes a different architecture for service mesh altogether. Most of the service meshes available on the market either use Envoy or in-house-developed sidecar proxies, which incorporate the success factor for the product, but very little effort has been made to invent a solution from the ground up. This paper explores one such way to change the current service mesh: by identifying a fresh service mesh architecture, creating the test platform, and configuring it to run in a Kubernetes environment.
 
 \subsection{Research Questions}
-The following questions were formulated for the purpose of this research:
+The following questions are formulated for the purpose of this research::
 \begin{itemize}
-  \item Does ambient mesh consumes less compute resources than sidecar mode?
-  \item Does the sidecar less architecture reduces operational complexities?
+  \item Does ambient mesh consume less compute resources than sidecar mode?
+  \item Does the sidecar-less architecture reduce operational complexities?
 \end{itemize}
 
 \subsection{Objectives}
 The objective of this research is to establish the followings:
 \begin{itemize}
-  \item Comparison of CPU and memory utilization of Istio sidecar and ambient systems.
-  \item Compare system installation and upgrade complexity of sidecar and ambient mode.
+  \item Compare the resource utilization of the Istio system in sidecar and ambient modes.
+  \item Compare the operational complexity of the Istio sidecar and ambient modes.
 \end{itemize}

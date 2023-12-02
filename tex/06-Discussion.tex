@@ -1,11 +1,11 @@
 \section{Discussion}
 This section emphasizes the research findings by revisiting test result data and answering the research questions followed by establishing some key facts and limitations of ambient mesh.
 
-\textbf{RQ1. Does the ambient mesh consumes less compute resources than Istio sidecar mode?}
+\textbf{RQ1. Does ambient mesh consume less compute resources than sidecar mode?}
 
 Looking at the numbers, the pod memory utilization is improved by 23\% in ambient mode and while comparing the Istio system memory consumption, it is improved by more than 70\% over sidecar mode. Looking at the exact test result data for comparing sidecar mode against ambient mode only with layer 4 processing, the memory consumption is 88.47\% and 95.13\% (Table \ref{res:sidecarMemVsL4}) better in single and multiple namespaces respectively. While comparing the results between sidecar and ambient mode with layer 4 and layer 7 processing the difference is 79.45\% and 74.98\% (Table \ref{res:sidecarMemVsL4L7}) in single and multiple namespaces. CPU resource utilization is also improved in ambient mode as the result shows an improvement of 51.4\% and 48\% for single and multiple namespaces while comparing sidecar with ambient layer 4 processing. Finally when sidecar mode is tested against ambient mode with layer 4 and layer 7 processing enabled, CPU improvement percentage is seen as 7.4\% and 39\% for single and multiple namespaces. Based on these results, ambient mode definitely brings some significant savings in compute resources utilization over its counterpart.
 
-\textbf{RQ2. Does the sidecar less architecture reduces operational complexities in Istio system upgrade and installation?}
+\textbf{RQ2. Does the sidecar-less architecture reduce operational complexities?}
 
 A service mesh like Istio comes bundled with multiple features but all of these may not be relevant for everyone all the times. The gradual shift from layer 4 processing to layer 7 brings a possibility of selecting the required service mesh features and gives the operator a greater control over its usability and cost management. Istio upgrade remains one of the most intensive operational tasks in administration however blue-green deployment gives certain level of confidence and rollback facilities when it is needed. Even though by using blue-green deployment model, the service downtime can be avoided but a true upgrade is only possible once all the microservice pods are restarted in sidecar mode. In ambient mode, as there is no sidecar injection, the platform team can sign off early once they tested the data plane on their own. Hence, the operational complexity is reduced in ambient mesh along with opening a new scale of flexibility in service mesh adoption.
 
