@@ -1,23 +1,29 @@
-\makeglossaries
-
-\newglossaryentry{mebibyte}
-{
-  name=Mebibyte,
-  description={is the typical memory unit representation by Operating Systems which is always a power of 2, e.g., 1KiB = 1,024bytes (2\textsuperscript{10})}
-}
-
-\newglossaryentry{mtlsfull}
-{
-  name=Mutual TLS,
-  description={is an authentication protocol between two endpoint to establish secure connection}
-}
+%use 'makeglossaries main' cmd from tex/build folder to build glossary
+%while using vscode latex workshop plugin, saving a file auto triggers latex build but does not builds the glossary
 
 \newacronym{boa}{BOA}{Bank of Anthos}
 \newacronym{gcp}{GCP}{Google Cloud Platform}
 \newacronym{gke}{GKE}{Google Kubernetes Engine}
-\newacronym{vpc}{VPC}{Virtual private network}
-\newacronym{iac}{IaC}{Infrastructure as code}
-\newacronym{rbac}{RBAC}{Role based access control}
-\newacronym{jit}{JIT}{Just in time compiler}
-\newacronym{mtls}{mTLS}{Mutual transport layer security}
+\newacronym{vpc}{VPC}{Virtual Private Network}
+\newacronym{iac}{IaC}{Infrastructure as Code}
+\newacronym{rbac}{RBAC}{Role Based Access Control}
+\newacronym{jit}{JIT}{Just in Time}
+\newacronym{mtls}{mTLS}{Mutual Transport Layer Security}
 \newacronym{mib}{MiB}{Mebibyte}
+\newacronym{os}{OS}{Operating System}
+
+\newglossaryentry{mebibyte}
+{
+  name=Mebibyte,
+  description={
+    is the typical memory unit representation in power of two used by OS. \\
+    1KiB = 1,024 Bytes (2\textsuperscript{10}) \\
+    1MiB = 1,048,576 Bytes (2\textsuperscript{20})
+  }
+}
+
+\newglossaryentry{mtlsglo}
+{
+  name=Mutual TLS,
+  description={is an authentication protocol between two endpoints to establish a secure connection}
+}
