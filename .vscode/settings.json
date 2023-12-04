@@ -1,0 +1,70 @@
+// This file is used by VSCode Latex Workshop plugin to build PDF on pressing Cmd+Opt+B while any tex file is open
+//  By default Latex Workshop use latexmk recipe that does not include glossary build, hence this is written
+
+{
+  "latex-workshop.latex.outDir": "%DIR%/build",
+  "latex-workshop.latex.autoBuild.run": "never",
+  "latex-workshop.latex.recipe.default": "tud",
+  "latex-workshop.latex.build.rootfileInStatus": true,
+  "latex-workshop.latex.search.rootFiles.include":[
+    "tex/main.tex",
+  ],
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "tud",
+      "tools": [
+        //"latexmk"
+        "pdflatex",
+        "biber",
+        "makeglossaries",
+        "pdflatex",
+        "pdflatex"
+      ]
+    },
+  ],
+  
+  "latex-workshop.latex.tools": [
+    // {
+    //   "name": "latexmk",
+    //   "command": "latexmk",
+    //   "args": [
+    //     "-synctex=1",
+    //     "-interaction=nonstopmode",
+    //     "-file-line-error",
+    //     "-pdf",
+    //     "-outdir=%OUTDIR%",
+    //     "%DOC%"
+    //   ],
+    // },
+    {
+      "name": "pdflatex",
+      "command": "pdflatex",
+      "args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-output-directory=%OUTDIR%",
+        "%DOC%"
+      ],
+    },
+    {
+      "name": "biber",
+      "command": "biber",
+      "args": [
+        "--output-directory=%DIR%/build",
+        "--input-directory=%DIR%",
+        "%DIR%/build/main.bcf",
+      ],
+    },
+    {
+      "name": "makeglossaries",
+      "command": "makeglossaries",
+      "args": [
+        "-d%DIR%/build",
+        "%DOCFILE%"
+      ],
+      "env": {
+      }
+    }
+  ]
+}
