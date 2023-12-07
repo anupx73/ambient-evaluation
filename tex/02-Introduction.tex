@@ -7,16 +7,11 @@ At the core of Istio, it uses sidecar proxies, which encapsulate all the methods
 \subsection{Motivation}
 Performance optimization remains an engineering task for any software team, and service mesh is no different. There are several pieces of literature published on comparing Istio and other service meshes from a performance and security perspective, but there is no paper that describes a different architecture for service mesh altogether. Most of the service meshes available today either use Envoy or in-house-developed sidecar proxies, which determines the success factor of the product. A limited effort is published on the Internet to invent a solution from the ground up to break this practice. This paper explores one such technology by identifying a new architecture and evaluating it in a Kubernetes environment.
 
-\subsection{Research Questions}
-The following questions are formulated for the purpose of this research::
-\begin{itemize}
-  \item Does ambient mesh consume less compute resources than sidecar mode?
-  \item Does the sidecar-less architecture reduce operational complexities?
-\end{itemize}
+\subsection{Research Questions and Objectives}
+The following questions are formulated for the purpose of this research: 
 
-\subsection{Objectives}
-The objective of this research is to establish the followings:
-\begin{itemize}
-  \item Compare the resource utilization of the Istio system in sidecar and ambient modes.
-  \item Compare the operational complexity of the Istio sidecar and ambient modes.
-\end{itemize}
+\textbf{RQ1. Does Istio ambient mode consumes less compute resources than sidecar mode?}
+
+\textbf{RQ2. Does the sidecar-less architecture reduces operational complexities?}
+
+To find the answer to the above research questions, a systemic methodology is followed by setting up the infrastructure for running Istio and supporting components on a Kubernetes cluster. Firstly, the objective of this paper is to investigate the resource utilization of the Istio system in sidecar and ambient modes in different Kubernetes environments. Secondly, an effort is made to further dig down into the Istio system to find out the operational complexity of two different Istio modes and compare them from an operator or platform engineering perspective.
